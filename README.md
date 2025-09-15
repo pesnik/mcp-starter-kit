@@ -32,9 +32,9 @@ pnpm start             # Chat interface at http://localhost:4200
 
 ### 🔧 **Option 2: Learn MCP Development (10 min)**
 ```bash
-# Test MCP servers directly
-pnpm run serve:filesystem       # Terminal 1: Start filesystem server
-pnpm run test:filesystem        # Terminal 2: Test with CLI client
+# Build your own MCP servers and clients
+npx nx g @nx/node:application my-server --directory=servers/my-server
+npx nx g @nx/node:application my-client --directory=clients/my-client
 
 # Explore project structure
 pnpm run graph                  # Visualize the architecture
@@ -47,11 +47,10 @@ pnpm run graph                  # Visualize the architecture
 ├── chat/                          # 💬 AI chat interface with MCP integration
 
 🏗️ MCP Protocol Implementation
-├── servers/                       # 🖥️ MCP SERVERS (AI tools)
-│   ├── mcp-server-filesystem/     #   📁 File operations (Node.js/TypeScript)
-│   └── mcp-server-web-python/     #   🕸️ Web scraping (Python)
-├── clients/                       # 💻 MCP CLIENTS
-│   └── mcp-client-test/           #   🧪 CLI testing & validation
+├── servers/                       # 🖥️ MCP SERVERS (Create your AI tools here)
+│   └── .gitignore                 #   Ready for your server implementations
+├── clients/                       # 💻 MCP CLIENTS (Create your MCP clients here)
+│   └── .gitignore                 #   Ready for your client implementations
 ├── libs/
 │   └── mcp-utils/                 # 🔧 Shared utilities & types
 
@@ -72,16 +71,17 @@ pnpm run dev             # Development mode with hot reload
 
 ### 🖥️ **MCP Server Development**
 ```bash
-pnpm run serve:filesystem    # Start file operations server
-pnpm run serve:web           # Start Python web scraping server
+# Generate and run your servers
+npx nx g @nx/node:application my-server --directory=servers/my-server
+npx nx run my-server:serve   # Start your server
 pnpm run build               # Build all projects
 ```
 
 ### 🧪 **MCP Client Testing**
 ```bash
-pnpm run test:filesystem     # Test filesystem server via CLI
-pnpm run test:web            # Test web server via CLI
-pnpm run test-client         # Interactive MCP client
+# Generate and test your clients
+npx nx g @nx/node:application my-client --directory=clients/my-client
+npx nx run my-client:serve   # Run your client
 ```
 
 ### 🛠️ **Development & Analysis**
@@ -95,7 +95,7 @@ pnpm run format              # Code formatting
 
 ### 1. Generate Server
 ```bash
-npx nx g @nx/node:application mcp-server-myfeature --directory=servers/mcp-server-myfeature
+npx nx g @nx/node:application my-server --directory=servers/my-server
 ```
 
 ### 2. Implement MCP Protocol
@@ -113,9 +113,10 @@ const server = new Server({
 // Add your tools here!
 ```
 
-### 3. Test with CLI Client
+### 3. Test Your Server
 ```bash
-pnpm run test-client custom "npx nx run mcp-server-myfeature:serve"
+npx nx run my-server:serve     # Start your server
+# Then connect with the chat interface or build a test client
 ```
 
 ## 📚 Learning Resources
@@ -149,13 +150,13 @@ AI Client ←→ MCP Transport ←→ Your MCP Server ←→ Real World Systems
 ```json
 {
   "mcpServers": {
-    "filesystem": {
+    "my-server": {
       "command": "npx",
-      "args": ["nx", "run", "mcp-server-filesystem:serve"]
+      "args": ["nx", "run", "my-server:serve"]
     },
-    "web-scraper": {
-      "command": "python",
-      "args": ["./servers/mcp-server-web-python/src/main.py"]
+    "custom-server": {
+      "command": "node",
+      "args": ["./servers/custom-server/dist/main.js"]
     }
   }
 }

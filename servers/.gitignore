@@ -1,0 +1,31 @@
+# MCP Servers Directory
+# Add your MCP server implementations here
+
+# Example structure:
+# mcp-server-filesystem/     - File operations server
+# mcp-server-database/       - Database interface server
+# mcp-server-api/            - REST API wrapper server
+# mcp-server-custom/         - Your custom server
+
+# Build outputs
+*/dist/
+*/build/
+*/out/
+
+# Dependencies
+*/node_modules/
+*/__pycache__/
+*/venv/
+*/.venv/
+
+# Logs
+*.log
+*/logs/
+
+# Environment files
+*/.env
+*/.env.local
+
+# IDE files
+*/.vscode/
+*/.idea/
