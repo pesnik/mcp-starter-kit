@@ -1,0 +1,6 @@
+packages:
+  - 'packages/*'
+  - 'servers/*'
+  - 'clients/*'
+  - 'libs/*'
+  - 'chat'

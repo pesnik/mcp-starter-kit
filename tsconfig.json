@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./servers/mcp-server-filesystem"
+    },
+    {
+      "path": "./clients/mcp-client-test"
+    },
+    {
+      "path": "./libs/mcp-utils"
+    },
+    {
+      "path": "./chat"
+    }
+  ]
+}

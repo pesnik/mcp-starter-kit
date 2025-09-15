@@ -1,0 +1,200 @@
+.chatInterface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1a1a1a;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.status {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+.serverCount, .toolCount {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 80%;
+}
+
+.message.user {
+  align-self: flex-end;
+}
+
+.message.assistant {
+  align-self: flex-start;
+}
+
+.message.system {
+  align-self: center;
+  max-width: 90%;
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #999999;
+}
+
+.role {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.timestamp {
+  color: #666666;
+}
+
+.content {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.user .content {
+  background: #007acc;
+  color: #ffffff;
+}
+
+.assistant .content {
+  background: #404040;
+  color: #ffffff;
+  border: 1px solid #606060;
+}
+
+.system .content {
+  background: #2d4a2d;
+  color: #ccffcc;
+  border: 1px solid #4a6b4a;
+  text-align: center;
+}
+
+.toolCalls {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #3d3d3d;
+  border-radius: 8px;
+  border: 1px solid #606060;
+}
+
+.toolCall {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #2d2d2d;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.8rem;
+}
+
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-style: italic;
+  color: #999999;
+}
+
+.inputForm {
+  border-top: 1px solid #404040;
+  background: #2d2d2d;
+  padding: 1rem 2rem;
+}
+
+.inputContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  flex: 1;
+  background: #404040;
+  color: #ffffff;
+  border: 1px solid #606060;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendButton {
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: #005fa3;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.availableTools {
+  font-size: 0.8rem;
+  color: #cccccc;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toolBadge {
+  background: #404040;
+  color: #ffffff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  border: 1px solid #606060;
+}
