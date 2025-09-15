@@ -257,7 +257,16 @@ export function ChatInterface({
                   <div key={i} className={styles.toolCall}>
                     <div><strong>{call.function?.name || 'Unknown'}</strong></div>
                     <div style={{marginTop: '0.5rem', fontSize: '0.75rem', color: '#aaa'}}>
-                      {call.function?.arguments ? JSON.stringify(JSON.parse(call.function.arguments), null, 2) : 'No arguments'}
+                      {call.function?.arguments ? (() => {
+                        try {
+                          const args = typeof call.function.arguments === 'string'
+                            ? JSON.parse(call.function.arguments)
+                            : call.function.arguments;
+                          return JSON.stringify(args, null, 2);
+                        } catch (e) {
+                          return call.function.arguments.toString();
+                        }
+                      })() : 'No arguments'}
                     </div>
                   </div>
                 ))}
