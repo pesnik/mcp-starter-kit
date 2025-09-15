@@ -28,13 +28,16 @@ ollama pull llama3.2:3b
 # 3. Start the complete experience
 pnpm start             # Chat interface at http://localhost:4200
 ```
-**What you'll see:** A ChatGPT-like interface where AI can actually use file operations and web scraping through MCP!
+**What you'll see:** A modern, responsive chat interface where AI can actually use file operations and web scraping through MCP! Features include real-time streaming, tool call visualization, and professional UI design.
 
 ### 🔧 **Option 2: Learn MCP Development (10 min)**
 ```bash
 # Build your own MCP servers and clients
 npx nx g @nx/node:application my-server --directory=servers/my-server
 npx nx g @nx/node:application my-client --directory=clients/my-client
+
+# Configure your server in mcp-config.json
+# See greeting-server example for reference
 
 # Explore project structure
 pnpm run graph                  # Visualize the architecture
@@ -44,15 +47,20 @@ pnpm run graph                  # Visualize the architecture
 
 ```
 🤖 Live Demo
-├── chat/                          # 💬 AI chat interface with MCP integration
+├── chat/                          # 💬 Modern responsive chat UI with MCP integration
+│   ├── src/app/components/        #   - Professional gradient design
+│   │   ├── ChatInterface.tsx      #   - Real-time streaming responses
+│   │   └── ServerManager.tsx      #   - Tool call visualization
+│   └── src/app/services/          #   - Mobile-responsive layout
 
 🏗️ MCP Protocol Implementation
 ├── servers/                       # 🖥️ MCP SERVERS (Create your AI tools here)
-│   └── .gitignore                 #   Ready for your server implementations
+│   └── greeting-server/           #   Example: Minimal greeting server
 ├── clients/                       # 💻 MCP CLIENTS (Create your MCP clients here)
 │   └── .gitignore                 #   Ready for your client implementations
 ├── libs/
 │   └── mcp-utils/                 # 🔧 Shared utilities & types
+├── mcp-config.json                # 🔧 MCP server configuration
 
 📚 Learning Resources
 └── examples/                      # 🎯 Guides & integration patterns
@@ -146,29 +154,49 @@ AI Client ←→ MCP Transport ←→ Your MCP Server ←→ Real World Systems
 - **VS Code Extensions**: Connect via MCP client libraries
 - **Custom Agents**: Build AI assistants with your specific tools
 
-### Configuration Example
+### MCP Configuration (`mcp-config.json`)
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "my-server": {
-      "command": "npx",
-      "args": ["nx", "run", "my-server:serve"]
-    },
-    "custom-server": {
+      "name": "My Custom Server",
+      "description": "Description of what your server does",
       "command": "node",
-      "args": ["./servers/custom-server/dist/main.js"]
+      "args": ["./servers/my-server/dist/main.js"],
+      "type": "local",
+      "enabled": true
+    },
+    "filesystem": {
+      "name": "Filesystem Server",
+      "description": "File operations and management",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/directory"],
+      "type": "third-party",
+      "enabled": false
     }
+  },
+  "discovery": {
+    "scanLocalServers": false,
+    "autoDiscoverWorkspace": false
   }
 }
 ```
 
 ## 🚀 Advanced Features
 
+### 🎨 **Modern Chat Interface**
+- **Responsive Design**: CSS Grid layout that adapts from mobile to desktop
+- **Professional UI**: Gradient backgrounds, smooth animations, glass morphism effects
+- **Smart Text Handling**: Proper word wrapping, textarea input with Enter/Shift+Enter
+- **Real-time Tool Calls**: Clean visualization of MCP function calls and results
+- **Mobile Optimized**: Touch-friendly controls and collapsible sidebar
+
+### 🔧 **Development Experience**
 - **Multi-language Support**: Node.js, Python, with extensible architecture
-- **Hot Reloading**: Nx dev server integration
+- **Hot Reloading**: Nx dev server integration with live chat updates
 - **Type Safety**: Full TypeScript support with MCP SDK types
+- **Configuration Management**: JSON-based MCP server discovery and setup
 - **Testing Framework**: Automated testing for MCP protocol compliance
-- **Documentation**: Auto-generated API docs from MCP schemas
 
 ## 📖 Documentation
 
