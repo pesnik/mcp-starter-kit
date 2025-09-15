@@ -223,10 +223,10 @@ export function ChatInterface({
         <h3>Chat with {selectedModel}</h3>
         <div className={styles.status}>
           <span className={styles.serverCount}>
-            🖥️ {runningServers.length} servers running
+            <span>●</span> {runningServers.length} servers
           </span>
           <span className={styles.toolCount}>
-            🔧 {availableToolsCount} tools available
+            <span>⚡</span> {availableToolsCount} tools
           </span>
         </div>
       </div>
@@ -239,7 +239,6 @@ export function ChatInterface({
           >
             <div className={styles.messageHeader}>
               <span className={styles.role}>
-                {message.role === 'user' ? '👤' : message.role === 'assistant' ? '🤖' : '💡'}
                 {message.role}
               </span>
               <span className={styles.timestamp}>
@@ -253,10 +252,13 @@ export function ChatInterface({
             </div>
             {message.toolCalls && message.toolCalls.length > 0 && (
               <div className={styles.toolCalls}>
-                <strong>🔧 Tool Calls:</strong>
+                <strong>Tool Calls</strong>
                 {message.toolCalls.map((call, i) => (
                   <div key={i} className={styles.toolCall}>
-                    <code>{JSON.stringify(call, null, 2)}</code>
+                    <div><strong>{call.function?.name || 'Unknown'}</strong></div>
+                    <div style={{marginTop: '0.5rem', fontSize: '0.75rem', color: '#aaa'}}>
+                      {call.function?.arguments ? JSON.stringify(JSON.parse(call.function.arguments), null, 2) : 'No arguments'}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -266,10 +268,10 @@ export function ChatInterface({
         {isStreaming && (
           <div className={`${styles.message} ${styles.assistant}`}>
             <div className={styles.messageHeader}>
-              <span className={styles.role}>🤖 assistant</span>
+              <span className={styles.role}>assistant</span>
             </div>
             <div className={styles.content}>
-              <div className={styles.typing}>💭 Thinking...</div>
+              <div className={styles.typing}>Thinking...</div>
             </div>
           </div>
         )}
@@ -278,24 +280,31 @@ export function ChatInterface({
 
       <form onSubmit={handleSubmit} className={styles.inputForm}>
         <div className={styles.inputContainer}>
-          <input
-            type="text"
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
             placeholder={
               availableToolsCount > 0
-                ? "Ask me anything! I can use MCP tools to help you..."
+                ? "Ask me anything! I can use MCP tools to help you... (Shift+Enter for new line)"
                 : "Start some MCP servers to enable tool usage..."
             }
             disabled={isStreaming}
             className={styles.input}
+            rows={1}
+            style={{ resize: 'none' }}
           />
           <button
             type="submit"
             disabled={!input.trim() || isStreaming}
             className={styles.sendButton}
           >
-            {isStreaming ? '⏳' : '🚀'}
+            {isStreaming ? '⏳' : 'Send'}
           </button>
         </div>
 

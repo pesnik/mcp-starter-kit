@@ -37,15 +37,20 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token-here"
       }
+    },
+    "greeting": {
+      "name": "Greeting Server",
+      "description": "A minimal MCP server that greets users with their system username and provides system info",
+      "command": "node",
+      "args": ["../servers/greeting-server/index.js"],
+      "type": "local",
+      "enabled": true
     }
   },
   "discovery": {
-    "scanLocalServers": true,
-    "localServerPaths": [
-      "servers",
-      "packages"
-    ],
-    "autoDiscoverWorkspace": true
+    "scanLocalServers": false,
+    "localServerPaths": [],
+    "autoDiscoverWorkspace": false
   },
   "settings": {
     "maxConcurrentServers": 10,

@@ -2,51 +2,106 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #1a1a1a;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
+  padding: 1.5rem 2rem;
+  background: rgba(45, 45, 45, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(64, 64, 64, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .header h3 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1.4rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .status {
   display: flex;
-  gap: 1rem;
-  font-size: 0.9rem;
-  color: #cccccc;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  color: #999999;
 }
 
 .serverCount, .toolCount {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(64, 64, 64, 0.3);
+  border-radius: 20px;
+  border: 1px solid rgba(96, 96, 96, 0.2);
+  transition: all 0.2s ease;
+}
+
+.serverCount:hover, .toolCount:hover {
+  background: rgba(64, 64, 64, 0.5);
+  border-color: rgba(96, 96, 96, 0.4);
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: rgba(64, 64, 64, 0.1);
+  border-radius: 10px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(96, 96, 96, 0.5);
+  border-radius: 10px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 96, 96, 0.7);
 }
 
 .message {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: 80%;
+  gap: 0.75rem;
+  max-width: min(85%, 800px);
+  min-width: 0;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@media (max-width: 768px) {
+  .message {
+    max-width: 95%;
+  }
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.user {
@@ -66,13 +121,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
-  color: #999999;
+  font-size: 0.75rem;
+  color: #888888;
+  margin-bottom: 0.25rem;
 }
 
 .role {
-  font-weight: 600;
-  text-transform: capitalize;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.7rem;
 }
 
 .timestamp {
@@ -80,45 +138,61 @@
 }
 
 .content {
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  line-height: 1.5;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  line-height: 1.6;
   white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .user .content {
-  background: #007acc;
+  background: linear-gradient(135deg, #007acc 0%, #005fa3 100%);
   color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .assistant .content {
-  background: #404040;
+  background: linear-gradient(135deg, #404040 0%, #353535 100%);
   color: #ffffff;
-  border: 1px solid #606060;
+  border: 1px solid rgba(96, 96, 96, 0.5);
 }
 
 .system .content {
-  background: #2d4a2d;
+  background: linear-gradient(135deg, #2d4a2d 0%, #1e3a1e 100%);
   color: #ccffcc;
-  border: 1px solid #4a6b4a;
+  border: 1px solid rgba(74, 107, 74, 0.8);
   text-align: center;
+  font-style: italic;
 }
 
 .toolCalls {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #3d3d3d;
-  border-radius: 8px;
-  border: 1px solid #606060;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(61, 61, 61, 0.8);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 96, 96, 0.4);
+  backdrop-filter: blur(5px);
 }
 
 .toolCall {
   margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #2d2d2d;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Menlo', monospace;
+  padding: 0.75rem;
+  background: rgba(45, 45, 45, 0.9);
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-size: 0.8rem;
+  border: 1px solid rgba(96, 96, 96, 0.2);
+  overflow: auto;
+  word-break: break-all;
+  white-space: pre-wrap;
+  max-width: 100%;
 }
 
 .typing {
@@ -130,30 +204,43 @@
 }
 
 .inputForm {
-  border-top: 1px solid #404040;
-  background: #2d2d2d;
-  padding: 1rem 2rem;
+  border-top: 1px solid rgba(64, 64, 64, 0.5);
+  background: rgba(45, 45, 45, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .inputContainer {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: flex-end;
 }
 
 .input {
   flex: 1;
-  background: #404040;
+  background: rgba(64, 64, 64, 0.8);
   color: #ffffff;
-  border: 1px solid #606060;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  border: 1px solid rgba(96, 96, 96, 0.5);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  min-height: 44px;
+  max-height: 120px;
+  resize: vertical;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(5px);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: inherit;
 }
 
 .input:focus {
   outline: none;
   border-color: #007acc;
+  box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.2);
+  background: rgba(64, 64, 64, 0.95);
 }
 
 .input:disabled {
@@ -162,18 +249,22 @@
 }
 
 .sendButton {
-  background: #007acc;
+  background: linear-gradient(135deg, #007acc 0%, #005fa3 100%);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+  min-height: 44px;
 }
 
 .sendButton:hover:not(:disabled) {
-  background: #005fa3;
+  background: linear-gradient(135deg, #005fa3 0%, #004a82 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.4);
 }
 
 .sendButton:disabled {
@@ -182,19 +273,31 @@
 }
 
 .availableTools {
-  font-size: 0.8rem;
-  color: #cccccc;
+  font-size: 0.75rem;
+  color: #aaaaaa;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  padding: 0.75rem;
+  background: rgba(64, 64, 64, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(96, 96, 96, 0.2);
 }
 
 .toolBadge {
-  background: #404040;
+  background: rgba(64, 64, 64, 0.8);
   color: #ffffff;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  border: 1px solid #606060;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  border: 1px solid rgba(96, 96, 96, 0.4);
+  font-weight: 500;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+}
+
+.toolBadge:hover {
+  background: rgba(64, 64, 64, 1);
+  border-color: rgba(96, 96, 96, 0.6);
 }
