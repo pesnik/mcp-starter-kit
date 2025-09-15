@@ -1,0 +1,17 @@
+{
+  "name": "@mcp-starter-kit/greeting-server",
+  "version": "1.0.0",
+  "description": "A minimal MCP server that greets users with their system username",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["mcp-server", "greeting", "demo"],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "author": "MCP Starter Kit",
+  "license": "MIT"
+}
