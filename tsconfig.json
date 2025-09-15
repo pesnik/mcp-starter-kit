@@ -8,6 +8,9 @@
     },
     {
       "path": "./chat"
+    },
+    {
+      "path": "./mcp-backend"
     }
   ]
 }

@@ -7,6 +7,8 @@
     "test": "nx run-many --target=test",
     "start": "nx run mcp-chat:serve",
     "chat": "nx run mcp-chat:serve",
+    "chat:backend": "cd chat && npm run backend:start",
+    "chat:full": "cd chat && npm run dev:with-backend",
     "dev": "nx run mcp-chat:serve",
     "graph": "nx graph",
     "lint": "nx run-many --target=lint",

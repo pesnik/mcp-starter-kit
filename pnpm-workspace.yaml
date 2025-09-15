@@ -4,3 +4,4 @@ packages:
   - 'clients/*'
   - 'libs/*'
   - 'chat'
+  - 'mcp-backend'
