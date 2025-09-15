@@ -75,17 +75,36 @@ export function ChatInterface({
     setIsStreaming(true);
 
     try {
+      // Get available MCP tools
+      const availableTools = await mcpManager.getOllamaFunctions();
+
+      // System prompt to guide AI behavior
+      const systemPrompt = {
+        role: 'system',
+        content: `You are an AI assistant with access to MCP (Model Context Protocol) tools. Follow these rules strictly:
+
+1. ONLY use data from MCP tool calls - NEVER generate fake or example data
+2. If a user asks for information that requires a tool you don't have, explain what tools are available instead
+3. Always use available MCP tools when appropriate for the user's request
+4. Do not invent, simulate, or provide dummy data for any request
+5. Be helpful but honest about your limitations
+6. When you use a tool, let the tool result speak for itself - do not add any commentary about using tools
+7. NEVER contradict or override information provided by MCP tools - if a tool says the user's name is "r_hasan", that is correct
+8. Do not claim you "don't know" information that was just provided by an MCP tool
+9. Do not explain that you used a tool or reference the MCP tool - just present the result naturally
+
+Available MCP tools: ${availableTools.map(t => t.name).join(', ') || 'None'}`
+      };
+
       // Prepare conversation context
-      const conversationMessages = messages
-        .filter(m => m.role !== 'system')
+      const conversationMessages = [systemPrompt]
+        .concat(messages.filter(m => m.role !== 'system'))
         .concat(userMessage)
         .map(m => ({
           role: m.role,
           content: m.content,
+          ...((m as any).toolCalls && { tool_calls: (m as any).toolCalls }),
         }));
-
-      // Get available MCP tools
-      const availableTools = await mcpManager.getOllamaFunctions();
 
       // Create initial assistant message
       let assistantContent = '';
@@ -141,7 +160,7 @@ export function ChatInterface({
             role: 'assistant',
             content: currentResponse,
             tool_calls: toolCalls
-          });
+          } as any);
 
           // Execute tool calls and add results
           for (const toolCall of toolCalls) {
@@ -171,7 +190,7 @@ export function ChatInterface({
                 role: 'tool',
                 content: resultText,
                 tool_call_id: toolCall.id
-              });
+              } as any);
 
             } catch (error) {
               const errorMsg = `❌ Tool call failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -181,7 +200,7 @@ export function ChatInterface({
                 role: 'tool',
                 content: errorMsg,
                 tool_call_id: toolCall.id
-              });
+              } as any);
             }
 
             setMessages(prev =>
