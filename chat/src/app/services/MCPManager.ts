@@ -5,6 +5,9 @@ export interface MCPServer {
   command: string;
   args: string[];
   status: 'stopped' | 'running' | 'error';
+  type?: 'local' | 'third-party';
+  enabled?: boolean;
+  env?: Record<string, string>;
   tools?: any[];
   resources?: any[];
 }
@@ -95,7 +98,9 @@ export class MCPManager {
 
   // Parse function call from Ollama and route to appropriate MCP server
   async handleFunctionCall(functionName: string, args: any): Promise<any> {
-    const [serverId, toolName] = functionName.split('_', 2);
+    const parts = functionName.split('_');
+    const serverId = parts[0];
+    const toolName = parts.slice(1).join('_'); // Rejoin the rest with underscores
     return this.callTool(serverId, toolName, args);
   }
 }

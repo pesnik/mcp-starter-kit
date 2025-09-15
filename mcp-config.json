@@ -1,0 +1,55 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "name": "File System Server",
+      "description": "Access and manage local file system operations",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users"],
+      "type": "third-party",
+      "enabled": true
+    },
+    "web-search": {
+      "name": "Web Search Server",
+      "description": "Perform web searches and fetch web content",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "type": "third-party",
+      "enabled": false,
+      "env": {
+        "BRAVE_API_KEY": "your-brave-api-key-here"
+      }
+    },
+    "postgres": {
+      "name": "PostgreSQL Server",
+      "description": "Connect to and query PostgreSQL databases",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"],
+      "type": "third-party",
+      "enabled": false
+    },
+    "github": {
+      "name": "GitHub Server",
+      "description": "Interact with GitHub repositories and issues",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "type": "third-party",
+      "enabled": false,
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token-here"
+      }
+    }
+  },
+  "discovery": {
+    "scanLocalServers": true,
+    "localServerPaths": [
+      "servers",
+      "packages"
+    ],
+    "autoDiscoverWorkspace": true
+  },
+  "settings": {
+    "maxConcurrentServers": 10,
+    "startupTimeout": 30000,
+    "logLevel": "info"
+  }
+}

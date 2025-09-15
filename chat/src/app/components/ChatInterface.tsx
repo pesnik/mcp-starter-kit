@@ -34,11 +34,30 @@ export function ChatInterface({
   ]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [availableToolsCount, setAvailableToolsCount] = useState(0);
+  const [availableToolsDisplay, setAvailableToolsDisplay] = useState<Array<{ serverId: string; serverName: string; tool: any }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const updateTools = async () => {
+      try {
+        const tools = await mcpManager.getAvailableTools();
+        setAvailableToolsCount(tools.length);
+        setAvailableToolsDisplay(tools);
+      } catch (error) {
+        console.error('Failed to get tools:', error);
+        setAvailableToolsCount(0);
+        setAvailableToolsDisplay([]);
+      }
+    };
+
+    updateTools();
+    // Update tools when servers change
+  }, [availableServers, mcpManager]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,35 +85,122 @@ export function ChatInterface({
         }));
 
       // Get available MCP tools
-      const availableTools = mcpManager.getOllamaFunctions();
+      const availableTools = await mcpManager.getOllamaFunctions();
 
-      // Stream response from Ollama
-      const stream = await ollamaClient.chat(
-        selectedModel,
-        conversationMessages,
-        availableTools.length > 0 ? availableTools : undefined
-      );
-
+      // Create initial assistant message
       let assistantContent = '';
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: '',
         timestamp: new Date(),
+        toolCalls: [],
       };
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      for await (const chunk of stream) {
-        assistantContent += chunk;
-        setMessages(prev =>
-          prev.map(m =>
-            m.id === assistantMessage.id
-              ? { ...m, content: assistantContent }
-              : m
-          )
+      // Handle conversation with potential function calls
+      let currentMessages = [...conversationMessages];
+      let hasToolCalls = false;
+
+      do {
+        hasToolCalls = false;
+
+        // Stream response from Ollama
+        const stream = await ollamaClient.chat(
+          selectedModel,
+          currentMessages,
+          availableTools.length > 0 ? availableTools : undefined
         );
-      }
+
+        let currentResponse = '';
+        let toolCalls: any[] = [];
+
+        for await (const chunk of stream) {
+          if (chunk.type === 'content') {
+            currentResponse += chunk.content;
+            assistantContent += chunk.content;
+          } else if (chunk.type === 'tool_call') {
+            toolCalls.push(chunk.toolCall);
+            hasToolCalls = true;
+          }
+
+          // Update UI in real-time
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === assistantMessage.id
+                ? { ...m, content: assistantContent, toolCalls: [...(m.toolCalls || []), ...toolCalls] }
+                : m
+            )
+          );
+        }
+
+        if (hasToolCalls) {
+          // Add assistant message with tool calls
+          currentMessages.push({
+            role: 'assistant',
+            content: currentResponse,
+            tool_calls: toolCalls
+          });
+
+          // Execute tool calls and add results
+          for (const toolCall of toolCalls) {
+            try {
+              assistantContent += `\n\n🔧 **Calling ${toolCall.function.name}**\n`;
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === assistantMessage.id
+                    ? { ...m, content: assistantContent }
+                    : m
+                )
+              );
+
+              const result = await mcpManager.handleFunctionCall(
+                toolCall.function.name,
+                toolCall.function.arguments
+              );
+
+              const resultText = typeof result.content === 'string'
+                ? result.content
+                : result.content?.[0]?.text || JSON.stringify(result, null, 2);
+
+              assistantContent += `📊 **Result**: ${resultText}\n`;
+
+              // Add tool result to conversation
+              currentMessages.push({
+                role: 'tool',
+                content: resultText,
+                tool_call_id: toolCall.id
+              });
+
+            } catch (error) {
+              const errorMsg = `❌ Tool call failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+              assistantContent += errorMsg + '\n';
+
+              currentMessages.push({
+                role: 'tool',
+                content: errorMsg,
+                tool_call_id: toolCall.id
+              });
+            }
+
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === assistantMessage.id
+                  ? { ...m, content: assistantContent }
+                  : m
+              )
+            );
+          }
+        } else {
+          // No tool calls, just add the response
+          currentMessages.push({
+            role: 'assistant',
+            content: currentResponse
+          });
+        }
+
+      } while (hasToolCalls); // Continue if there were tool calls
 
     } catch (error) {
       const errorMessage: Message = {
@@ -110,7 +216,6 @@ export function ChatInterface({
   };
 
   const runningServers = availableServers.filter(s => s.status === 'running');
-  const availableTools = mcpManager.getAvailableTools();
 
   return (
     <div className={styles.chatInterface}>
@@ -121,7 +226,7 @@ export function ChatInterface({
             🖥️ {runningServers.length} servers running
           </span>
           <span className={styles.toolCount}>
-            🔧 {availableTools.length} tools available
+            🔧 {availableToolsCount} tools available
           </span>
         </div>
       </div>
@@ -178,7 +283,7 @@ export function ChatInterface({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              availableTools.length > 0
+              availableToolsCount > 0
                 ? "Ask me anything! I can use MCP tools to help you..."
                 : "Start some MCP servers to enable tool usage..."
             }
@@ -194,10 +299,10 @@ export function ChatInterface({
           </button>
         </div>
 
-        {availableTools.length > 0 && (
+        {availableToolsDisplay.length > 0 && (
           <div className={styles.availableTools}>
             <strong>Available tools:</strong> {' '}
-            {availableTools.map((tool, i) => (
+            {availableToolsDisplay.map((tool, i) => (
               <span key={i} className={styles.toolBadge}>
                 {tool.serverName}: {tool.tool.name}
               </span>

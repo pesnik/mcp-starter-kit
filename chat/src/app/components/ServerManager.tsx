@@ -15,7 +15,9 @@ export function ServerManager({ servers, mcpManager, onServersChange }: ServerMa
     setLoadingServers(prev => new Set(prev).add(serverId));
     try {
       await mcpManager.startServer(serverId);
-      onServersChange(mcpManager.getAllServers());
+      // Refresh server list by re-discovering servers
+      const updatedServers = await mcpManager.discoverServers();
+      onServersChange(updatedServers);
     } catch (error) {
       console.error('Failed to start server:', error);
     } finally {
@@ -31,7 +33,9 @@ export function ServerManager({ servers, mcpManager, onServersChange }: ServerMa
     setLoadingServers(prev => new Set(prev).add(serverId));
     try {
       await mcpManager.stopServer(serverId);
-      onServersChange(mcpManager.getAllServers());
+      // Refresh server list by re-discovering servers
+      const updatedServers = await mcpManager.discoverServers();
+      onServersChange(updatedServers);
     } catch (error) {
       console.error('Failed to stop server:', error);
     } finally {
@@ -61,6 +65,22 @@ export function ServerManager({ servers, mcpManager, onServersChange }: ServerMa
     }
   };
 
+  const getTypeIcon = (type: MCPServer['type']) => {
+    switch (type) {
+      case 'local': return '🏠';
+      case 'third-party': return '📦';
+      default: return '🔧';
+    }
+  };
+
+  const getTypeText = (type: MCPServer['type']) => {
+    switch (type) {
+      case 'local': return 'Local';
+      case 'third-party': return 'Third-party';
+      default: return 'Server';
+    }
+  };
+
   return (
     <div className={styles.serverManager}>
       <h3>🖥️ MCP Servers</h3>
@@ -74,7 +94,12 @@ export function ServerManager({ servers, mcpManager, onServersChange }: ServerMa
                   {getStatusIcon(server.status)}
                 </span>
                 <div>
-                  <h4 className={styles.serverName}>{server.name}</h4>
+                  <div className={styles.serverTitleRow}>
+                    <h4 className={styles.serverName}>{server.name}</h4>
+                    <span className={styles.serverType} title={`${getTypeText(server.type)} server`}>
+                      {getTypeIcon(server.type)} {getTypeText(server.type)}
+                    </span>
+                  </div>
                   <p className={styles.serverDescription}>{server.description}</p>
                 </div>
               </div>
@@ -141,16 +166,20 @@ export function ServerManager({ servers, mcpManager, onServersChange }: ServerMa
       <div className={styles.addServer}>
         <h4>➕ Add Custom Server</h4>
         <p className={styles.hint}>
-          To add a custom MCP server, edit the <code>MCPManager.discoverServers()</code> method
-          or use the CLI test client to connect to external servers.
+          To add a custom MCP server, edit <code>mcp-config.json</code> in the root directory.
+          The configuration supports both local servers and third-party servers via npx.
         </p>
         <div className={styles.examples}>
-          <strong>Examples:</strong>
+          <strong>Third-party MCP servers you can add:</strong>
           <ul>
-            <li><code>npx @modelcontextprotocol/server-memory</code></li>
-            <li><code>npx @modelcontextprotocol/server-github</code></li>
-            <li><code>python custom-server.py</code></li>
+            <li><code>@modelcontextprotocol/server-filesystem</code> - File operations</li>
+            <li><code>@modelcontextprotocol/server-brave-search</code> - Web search</li>
+            <li><code>@modelcontextprotocol/server-github</code> - GitHub integration</li>
+            <li><code>@modelcontextprotocol/server-postgres</code> - Database access</li>
           </ul>
+          <p className={styles.configHint}>
+            💡 Check <code>mcp-config.json</code> for configuration examples and enable servers by setting <code>"enabled": true</code>
+          </p>
         </div>
       </div>
     </div>
