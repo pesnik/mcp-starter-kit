@@ -1,7 +1,3 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { spawn, ChildProcess } from 'child_process';
-
 export interface MCPServer {
   id: string;
   name: string;
@@ -9,166 +5,83 @@ export interface MCPServer {
   command: string;
   args: string[];
   status: 'stopped' | 'running' | 'error';
-  client?: Client;
-  process?: ChildProcess;
   tools?: any[];
   resources?: any[];
 }
 
 export class MCPManager {
-  private servers: Map<string, MCPServer> = new Map();
+  private readonly backendUrl: string;
+
+  constructor(backendUrl = 'http://localhost:3001') {
+    this.backendUrl = backendUrl;
+  }
 
   async discoverServers(): Promise<MCPServer[]> {
-    // Default servers available in the playground
-    const defaultServers: Omit<MCPServer, 'status' | 'id'>[] = [
-      {
-        name: 'Filesystem Server',
-        description: 'File operations (read, write, list)',
-        command: 'npx',
-        args: ['nx', 'run', 'mcp-server-filesystem:serve'],
-      },
-      {
-        name: 'Web Server',
-        description: 'Web scraping and content extraction',
-        command: 'python',
-        args: ['./servers/mcp-server-web-python/src/main.py'],
-      },
-    ];
-
-    const servers = defaultServers.map((server, index) => ({
-      ...server,
-      id: `server-${index}`,
-      status: 'stopped' as const,
-    }));
-
-    // Store servers
-    servers.forEach(server => {
-      this.servers.set(server.id, server);
-    });
-
-    return servers;
+    const response = await fetch(`${this.backendUrl}/api/servers`);
+    if (!response.ok) {
+      throw new Error(`Failed to discover servers: ${response.statusText}`);
+    }
+    return response.json();
   }
 
   async startServer(serverId: string): Promise<void> {
-    const server = this.servers.get(serverId);
-    if (!server) throw new Error(`Server ${serverId} not found`);
+    const response = await fetch(`${this.backendUrl}/api/servers/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ serverId }),
+    });
 
-    try {
-      console.log(`Starting server: ${server.name}`);
-
-      // Spawn the server process
-      const serverProcess = spawn(server.command, server.args, {
-        stdio: ['pipe', 'pipe', 'inherit'],
-      });
-
-      // Create MCP client
-      const client = new Client(
-        { name: 'mcp-chat-client', version: '1.0.0' },
-        { capabilities: {} }
-      );
-
-      // Connect via stdio
-      const transport = new StdioClientTransport({
-        reader: serverProcess.stdout!,
-        writer: serverProcess.stdin!,
-      });
-
-      await client.connect(transport);
-
-      // Get available tools and resources
-      const toolsResponse = await client.request(
-        { method: 'tools/list' },
-        { method: 'tools/list' }
-      );
-
-      const resourcesResponse = await client.request(
-        { method: 'resources/list' },
-        { method: 'resources/list' }
-      ).catch(() => ({ resources: [] })); // Some servers may not have resources
-
-      // Update server state
-      server.status = 'running';
-      server.client = client;
-      server.process = serverProcess;
-      server.tools = (toolsResponse as any).tools || [];
-      server.resources = (resourcesResponse as any).resources || [];
-
-      // Handle process exit
-      serverProcess.on('exit', () => {
-        server.status = 'stopped';
-        server.client = undefined;
-        server.process = undefined;
-      });
-
-      console.log(`✅ Server ${server.name} started with ${server.tools.length} tools`);
-
-    } catch (error) {
-      server.status = 'error';
-      console.error(`❌ Failed to start server ${server.name}:`, error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Failed to start server: ${response.statusText}`);
     }
   }
 
   async stopServer(serverId: string): Promise<void> {
-    const server = this.servers.get(serverId);
-    if (!server) return;
+    const response = await fetch(`${this.backendUrl}/api/servers/stop`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ serverId }),
+    });
 
-    if (server.client) {
-      await server.client.close();
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Failed to stop server: ${response.statusText}`);
     }
-
-    if (server.process) {
-      server.process.kill();
-    }
-
-    server.status = 'stopped';
-    server.client = undefined;
-    server.process = undefined;
   }
 
   async callTool(serverId: string, toolName: string, args: any): Promise<any> {
-    const server = this.servers.get(serverId);
-    if (!server || !server.client) {
-      throw new Error(`Server ${serverId} not running`);
+    const response = await fetch(`${this.backendUrl}/api/tools/call`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ serverId, toolName, args }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Failed to call tool: ${response.statusText}`);
     }
 
-    const response = await server.client.request(
-      { method: 'tools/call', params: { name: toolName, arguments: args } },
-      { method: 'tools/call' }
-    );
-
-    return response;
+    return response.json();
   }
 
-  getServer(serverId: string): MCPServer | undefined {
-    return this.servers.get(serverId);
-  }
-
-  getAllServers(): MCPServer[] {
-    return Array.from(this.servers.values());
-  }
-
-  getAvailableTools(): Array<{ serverId: string; serverName: string; tool: any }> {
-    const tools: Array<{ serverId: string; serverName: string; tool: any }> = [];
-
-    for (const server of this.servers.values()) {
-      if (server.status === 'running' && server.tools) {
-        server.tools.forEach(tool => {
-          tools.push({
-            serverId: server.id,
-            serverName: server.name,
-            tool
-          });
-        });
-      }
+  async getAvailableTools(): Promise<Array<{ serverId: string; serverName: string; tool: any }>> {
+    const response = await fetch(`${this.backendUrl}/api/tools`);
+    if (!response.ok) {
+      throw new Error(`Failed to get tools: ${response.statusText}`);
     }
-
-    return tools;
+    return response.json();
   }
 
   // Convert MCP tools to Ollama function format
-  getOllamaFunctions(): any[] {
-    const tools = this.getAvailableTools();
+  async getOllamaFunctions(): Promise<any[]> {
+    const tools = await this.getAvailableTools();
 
     return tools.map(({ serverId, tool }) => ({
       type: 'function',
