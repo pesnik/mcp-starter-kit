@@ -45,6 +45,14 @@
       "args": ["../servers/greeting-server/index.js"],
       "type": "local",
       "enabled": true
+    },
+    "playwright": {
+      "name": "Playwright Server",
+      "description": "Browser automation and web scraping with Playwright",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "type": "third-party",
+      "enabled": true
     }
   },
   "discovery": {

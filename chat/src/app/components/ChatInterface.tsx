@@ -36,6 +36,7 @@ export function ChatInterface({
   const [isStreaming, setIsStreaming] = useState(false);
   const [availableToolsCount, setAvailableToolsCount] = useState(0);
   const [availableToolsDisplay, setAvailableToolsDisplay] = useState<Array<{ serverId: string; serverName: string; tool: any }>>([]);
+  const [isToolsExpanded, setIsToolsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,6 +93,8 @@ export function ChatInterface({
 7. NEVER contradict or override information provided by MCP tools - if a tool says the user's name is "r_hasan", that is correct
 8. Do not claim you "don't know" information that was just provided by an MCP tool
 9. Do not explain that you used a tool or reference the MCP tool - just present the result naturally
+10. When calling tools, always provide ALL required parameters - never call tools with empty or missing parameters
+11. If a tool fails, do not retry it multiple times in a loop - try once and explain the issue if it fails
 
 Available MCP tools: ${availableTools.map(t => t.name).join(', ') || 'None'}`
       };
@@ -338,12 +341,21 @@ Available MCP tools: ${availableTools.map(t => t.name).join(', ') || 'None'}`
 
         {availableToolsDisplay.length > 0 && (
           <div className={styles.availableTools}>
-            <strong>Available tools:</strong> {' '}
-            {availableToolsDisplay.map((tool, i) => (
-              <span key={i} className={styles.toolBadge}>
-                {tool.serverName}: {tool.tool.name}
+            <div className={styles.toolsHeader} onClick={() => setIsToolsExpanded(!isToolsExpanded)}>
+              <strong>Available tools ({availableToolsCount})</strong>
+              <span className={styles.toggleIcon}>
+                {isToolsExpanded ? '▼' : '▶'}
               </span>
-            ))}
+            </div>
+            {isToolsExpanded && (
+              <div className={styles.toolsList}>
+                {availableToolsDisplay.map((tool, i) => (
+                  <span key={i} className={styles.toolBadge}>
+                    {tool.serverName}: {tool.tool.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </form>
