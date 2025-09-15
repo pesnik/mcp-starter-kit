@@ -19,23 +19,10 @@ export class MCPServerManager {
   private servers: Map<string, MCPServer> = new Map();
 
   async discoverServers(): Promise<MCPServer[]> {
-    // Default servers available in the playground
-    const defaultServers: Omit<MCPServer, 'status' | 'id'>[] = [
-      {
-        name: 'Filesystem Server',
-        description: 'File operations (read, write, list)',
-        command: 'npx',
-        args: ['nx', 'run', 'mcp-server-filesystem:serve'],
-      },
-      {
-        name: 'Web Server',
-        description: 'Web scraping and content extraction',
-        command: 'python',
-        args: ['./servers/mcp-server-web-python/src/main.py'],
-      },
-    ];
+    // Dynamically discover MCP servers in the workspace
+    const discoveredServers = await this.scanForMCPServers();
 
-    const servers = defaultServers.map((server, index) => ({
+    const servers = discoveredServers.map((server, index) => ({
       ...server,
       id: `server-${index}`,
       status: 'stopped' as const,
@@ -45,6 +32,79 @@ export class MCPServerManager {
     servers.forEach(server => {
       this.servers.set(server.id, server);
     });
+
+    return servers;
+  }
+
+  private async scanForMCPServers(): Promise<Omit<MCPServer, 'status' | 'id'>[]> {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    const servers: Omit<MCPServer, 'status' | 'id'>[] = [];
+    const workspaceRoot = process.cwd().includes('/chat') ? '../..' : '.';
+
+    try {
+      // Check for package.json files that might contain MCP servers
+      const packagePaths = [
+        path.join(workspaceRoot, 'servers'),
+        path.join(workspaceRoot, 'packages'),
+        path.join(workspaceRoot),
+      ];
+
+      for (const basePath of packagePaths) {
+        try {
+          const entries = await fs.readdir(basePath, { withFileTypes: true });
+
+          for (const entry of entries) {
+            if (entry.isDirectory() && entry.name.includes('mcp-server')) {
+              const serverPath = path.join(basePath, entry.name);
+              const packageJsonPath = path.join(serverPath, 'package.json');
+
+              try {
+                const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+
+                // Check if this is an MCP server
+                if (packageJson.name?.includes('mcp-server') ||
+                    packageJson.keywords?.includes('mcp-server') ||
+                    packageJson.dependencies?.['@modelcontextprotocol/sdk']) {
+
+                  servers.push({
+                    name: packageJson.displayName || packageJson.name || entry.name,
+                    description: packageJson.description || 'MCP Server',
+                    command: 'node',
+                    args: [path.join(serverPath, packageJson.main || 'index.js')],
+                  });
+                }
+              } catch (error) {
+                // Skip if package.json doesn't exist or is invalid
+                console.log(`Skipping ${serverPath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+            }
+          }
+        } catch (error) {
+          // Directory doesn't exist, skip
+        }
+      }
+
+      // If no servers found, show helpful message
+      if (servers.length === 0) {
+        servers.push({
+          name: 'No MCP Servers Found',
+          description: 'Add MCP servers to the servers/ directory. See README for setup instructions.',
+          command: 'echo',
+          args: ['No MCP servers configured'],
+        });
+      }
+
+    } catch (error) {
+      console.error('Error scanning for MCP servers:', error);
+      servers.push({
+        name: 'Server Discovery Error',
+        description: 'Error occurred while scanning for MCP servers',
+        command: 'echo',
+        args: ['Server discovery failed'],
+      });
+    }
 
     return servers;
   }
